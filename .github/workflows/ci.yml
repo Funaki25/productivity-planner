@@ -8,58 +8,50 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      NODE_VERSION: 20.18.3
-      NPM_VERSION: 10.8.2
+
+    strategy:
+      matrix:
+        node-version: [20.12]
 
     steps:
+      # Vérification du dépôt
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      - name: Setup Node.js ${{ env.NODE_VERSION }}
+      # Configuration de Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          registry-url: 'https://registry.npmjs.org'
-          cache: 'npm'
+          node-version: ${{ matrix.node-version }}
 
-      - name: Install exact npm version
-        run: |
-          npm install -g npm@${{ env.NPM_VERSION }}
-          npm config set audit-level high
-          npm config set fund false
-          npm config set engine-strict true
+      # Nettoyage du cache npm pour forcer le téléchargement frais des packages
+      - name: Clean npm cache
+        run: npm cache clean --force
 
-      - name: Clean environment
-        run: |
-          npm cache clean --force
-          rm -rf node_modules package-lock.json
-
+      # Installation des dépendances de manière propre via npm ci
       - name: Install dependencies
-        run: |
-          npm install --strict-peer-deps --legacy-peer-deps
-          npx npm-force-resolutions
+        run: npm ci
 
-      - name: Verify critical packages
-        run: |
-          echo "npm-package-arg version:"
-          npm list npm-package-arg
-          echo "\nsemver version:"
-          npm list semver
-          echo "\nIntegrity checks:"
-          shasum node_modules/npm-package-arg/package.json
-          shasum node_modules/semver/package.json
+      # Définir explicitement le registre npm
+      - name: Set npm registry
+        run: npm config set registry https://registry.npmjs.org/
 
-      - name: Audit Signatures
-        run: npm audit signatures --omit=dev
+      # Audit de sécurité
+      - name: Audit
+        run: npm audit
 
+      # Vérification de la signature des audits en ignorant les erreurs de niveau faible
+      - name: Audit Signature
+        run: npm audit signatures --audit-level=low
+
+      # Linter
       - name: Lint
         run: npm run lint
 
+      # Tests
       - name: Test
         run: npm run test:ci
 
+      # Build
       - name: Build
         run: npm run build
