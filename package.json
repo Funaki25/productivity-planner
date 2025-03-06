@@ -22,7 +22,10 @@
     "@angular/platform-browser-dynamic": "^19.2.1",
     "@angular/router": "^19.2.1",
     "esbuild": "^0.25.0",
+    "glob": "^11.0.1",
+    "inflight": "^1.0.6",
     "npm-package-arg": "^12.0.2",
+    "rimraf": "^6.0.1",
     "rxjs": "~7.8.0",
     "semver": "^7.7.1",
     "tslib": "^2.3.0",
@@ -42,7 +45,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.6.2",
+    "typescript": "^5.7.3",
     "typescript-eslint": "8.18.0"
   }
 }
