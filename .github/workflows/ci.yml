@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [23.09]
+        node-version: [20.12]
 
     steps:
       # Vérification du dépôt
