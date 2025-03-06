@@ -24,25 +24,17 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      # Nettoyage du cache npm pour forcer le téléchargement frais des packages
-      - name: Clean npm cache
-        run: npm cache clean --force
-
-      # Installation des dépendances de manière propre via npm ci
+      # Installation des dépendances avec npm clean-install
       - name: Install dependencies
-        run: npm ci
-
-      # Définir explicitement le registre npm
-      - name: Set npm registry
-        run: npm config set registry https://registry.npmjs.org/
+        run: npm clean-install
 
       # Audit de sécurité
       - name: Audit
         run: npm audit
 
-      # Vérification de la signature des audits en ignorant les erreurs de niveau faible
+      # Vérification de la signature des audits
       - name: Audit Signature
-        run: npm audit signatures --audit-level=low
+        run: npm audit signatures
 
       # Linter
       - name: Lint
