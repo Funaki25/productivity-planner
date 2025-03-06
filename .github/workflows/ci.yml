@@ -8,42 +8,58 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [20.12]
+    env:
+      NODE_VERSION: 20.18.3
+      NPM_VERSION: 10.8.2
 
     steps:
-      # Vérification du dépôt
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      # Configuration de Node.js
-      - name: Set up Node.js
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: ${{ env.NODE_VERSION }}
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
 
-      # Installation des dépendances avec npm clean-install
+      - name: Install exact npm version
+        run: |
+          npm install -g npm@${{ env.NPM_VERSION }}
+          npm config set audit-level high
+          npm config set fund false
+          npm config set engine-strict true
+
+      - name: Clean environment
+        run: |
+          npm cache clean --force
+          rm -rf node_modules package-lock.json
+
       - name: Install dependencies
-        run: npm clean-install
+        run: |
+          npm install --strict-peer-deps --legacy-peer-deps
+          npx npm-force-resolutions
 
-      # Audit de sécurité
-      - name: Audit
-        run: npm audit
+      - name: Verify critical packages
+        run: |
+          echo "npm-package-arg version:"
+          npm list npm-package-arg
+          echo "\nsemver version:"
+          npm list semver
+          echo "\nIntegrity checks:"
+          shasum node_modules/npm-package-arg/package.json
+          shasum node_modules/semver/package.json
 
-      # Vérification de la signature des audits
-      - name: Audit Signature
-        run: npm audit signatures
+      - name: Audit Signatures
+        run: npm audit signatures --omit=dev
 
-      # Linter
       - name: Lint
         run: npm run lint
 
-      # Tests
       - name: Test
         run: npm run test:ci
 
-      # Build
       - name: Build
         run: npm run build
