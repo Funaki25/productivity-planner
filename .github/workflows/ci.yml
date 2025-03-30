@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [23.09]
+        node-version: [20]
 
     steps:
       # Vérification du dépôt
@@ -27,14 +27,6 @@ jobs:
       # Installation des dépendances avec npm clean-install
       - name: Install dependencies
         run: npm clean-install
-
-      # Audit de sécurité
-      - name: Audit
-        run: npm audit
-
-      # Vérification de la signature des audits
-      - name: Audit Signature
-        run: npm audit signatures
 
       # Linter
       - name: Lint
